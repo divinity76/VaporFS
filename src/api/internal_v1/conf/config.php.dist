@@ -2,7 +2,7 @@
 declare(strict_types = 1);
 namespace vaporfs\api\v1;
 
-class Config2
+class Config
 {
 
     /* set your defualt values in here i guess */
