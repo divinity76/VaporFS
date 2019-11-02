@@ -1,0 +1,34 @@
+<?php
+declare(strict_types = 1);
+namespace vaporfs\api\v1;
+
+class Config2
+{
+
+    /* set your defualt values in here i guess */
+    
+    public $db_dsn = "mysql:host=127.0.0.1;port=3306;dbname=vaporfs;charset=utf8mb4";
+
+    // make sure it ends with /
+    public $api_basse_url = '/api/v1/';
+
+    public $db_username = "vaporfs";
+
+    public $db_password = "CHANGE_ME_the_mysql_password_rB4BxC6sf0tCSTX0V7";
+
+    // highly recommended to be TRUE in production! could reveal database passwords!
+    public $debug_data_enable_encryption = true;
+
+    public $debugdata_encryption_key = "CHANGE_ME_encryption_password_mcOsnkPpusvumbf8uD";
+    
+    public $inode_folder = "/vaporfs/inodes/";
+}
+
+function config(): \vaporfs\api\v1\Config
+{
+    static $config = null;
+    if ($config === null) {
+        $config = new Config();
+    }
+    return $config;
+}
