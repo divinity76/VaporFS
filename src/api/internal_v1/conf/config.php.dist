@@ -10,7 +10,9 @@ class Config
     public $db_dsn = "mysql:host=127.0.0.1;port=3306;dbname=vaporfs;charset=utf8mb4";
 
     // make sure it ends with /
-    public $api_basse_url = '/api/v1/';
+    public $api_base_url = '/api/v1/';
+    // make sure it ends with /
+    public $api_complete_base_url = 'http://127.0.0.1/api/v1/';
 
     public $db_username = "vaporfs";
 
@@ -21,6 +23,7 @@ class Config
 
     public $debugdata_encryption_key = "CHANGE_ME_encryption_password_mcOsnkPpusvumbf8uD";
     
+    // make sure it ends with /
     public $inode_folder = "/vaporfs/inodes/";
 }
 

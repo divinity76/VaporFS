@@ -71,10 +71,10 @@ vaporfs_response();
 $uri = $_SERVER['REQUEST_URI'];
 if (0 !== stripos($uri, "/api/v1/")) {
     vaporfs_response()->code = 400;
-    vaporfs_response()->status_text = "error: router accessed without api_base_url: " . config()->api_basse_url;
+    vaporfs_response()->status_text = "error: router accessed without api_base_url: " . config()->api_base_url;
     return;
 }
-$uri = substr($uri, strlen(config()->api_basse_url));
+$uri = substr($uri, strlen(config()->api_base_url));
 $uri_args = explode("/", $uri);
 $method = strtolower($uri_args[0] ?? '');
 unset($uri_args[0]);

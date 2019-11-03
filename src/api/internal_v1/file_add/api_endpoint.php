@@ -58,6 +58,7 @@ if (empty($name)) {
         $name = (string) ($_FILES['file']['name']);
     }
 }
+mb_internal_encoding('UTF-8'); // if someone overwrites this with something else...
 if (strlen($name) < 1) {
     // ....
     vaporfs_response()->code = 400;
@@ -69,12 +70,57 @@ if (! mb_check_encoding($name, 'UTF-8')) {
     vaporfs_response()->status_text = "name MUST be UTF-8 encoded! it appears the name is not in utf-8";
     return;
 }
+
 if (($utf8len = mb_strlen($name, 'UTF-8')) > 200) {
     // ... 200 * 4 = 800 bytes for storage? hmm
     vaporfs_response()->code = 400;
     vaporfs_response()->status_text = "name cannot be longer than 200 UTF-8 characters! (was " . $utf8len . " utf8 characters)";
     return;
 }
+
+if ($name === "." || $name === "..") {
+    vaporfs_response()->code = 400;
+    vaporfs_response()->status_text = "single-dot and double-dot names are not allowed... for now (if you want a name like that, try 3 dots?)";
+    return;
+}
+
+if (substr($name, 0, 2) === "./") {
+    vaporfs_response()->code = 400;
+    vaporfs_response()->status_text = "name cannot start with ./";
+    return;
+}
+
+if (substr($name, 0, 3) === "../") {
+    vaporfs_response()->code = 400;
+    vaporfs_response()->status_text = "name cannot start with ../";
+    return;
+}
+if (mb_substr($name, - 1) === "/") {
+    vaporfs_response()->code = 400;
+    vaporfs_response()->status_text = "name cannot end with /";
+    return;
+}
+if (mb_substr($name, - 2) === "/.") {
+    vaporfs_response()->code = 400;
+    vaporfs_response()->status_text = "name cannot end with /.";
+    return;
+}
+if (mb_substr($name, - 3) === "/..") {
+    vaporfs_response()->code = 400;
+    vaporfs_response()->status_text = "name cannot end with /..";
+    return;
+}
+if (false !== ($tmp = mb_strpos($name, "/./"))) {
+    vaporfs_response()->code = 400;
+    vaporfs_response()->status_text = "name cannot contain /./";
+    return;
+}
+if (false !== ($tmp = mb_strpos($name, "/../"))) {
+    vaporfs_response()->code = 400;
+    vaporfs_response()->status_text = "name cannot contain /../";
+    return;
+}
+
 $f->name = $name;
 
 $b2sum = call_user_func(function (): ?string {
@@ -154,18 +200,9 @@ try {
     vaporfs_response()->status_text = "add_file() error: " . $ex->getMessage();
     return;
 } // can also throw RuntimeException, but in that case we will deliberately not catch it (a HTTP 500 is appropriate.)
-
 vaporfs_response()->code = 200;
+vaporfs_response()->status_text = "file uploaded";
+vaporfs_response()->data['file_id'] = $file_id;
+vaporfs_response()->data['url'] = config()->api_complete_base_url . "";
 
-
-vaporfs_response()->status_text = "hello, world! status!";
-vaporfs_response()->data["testdata"] = "Hello world!";
-vaporfs_response()->data["testdata2"] = array(
-    'uri' => $uri,
-    'method' => $method,
-    'uri_args' => $uri_args,
-    'foo' => (new File_db())->get_inode_by_b2sum(str_repeat("\x00", 20), false)
-);
-//vaporfs_response()->disabled=true;
-//var_dump(vaporfs_response());
-
+return;

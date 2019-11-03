@@ -6,6 +6,8 @@ require_once (__DIR__ . DIRECTORY_SEPARATOR . 'conf' . DIRECTORY_SEPARATOR . 'co
 
 assert(is_readable(config()->inode_folder));
 assert(substr(config()->inode_folder, - 1) === DIRECTORY_SEPARATOR);
+assert(is_readable(config()->api_base_url));
+assert(substr(config()->inode_folder, - 1) === DIRECTORY_SEPARATOR);
 
 // misc functions below
 function getDB(): \PDO
@@ -427,15 +429,24 @@ class File_db
         // name varchar(200)
         // upload_time timestamp
         // upload_ip varbinary(16)
-        $stm = $this->db->prepare('INSERT INTO files (inode_id,owner_id,name,upload_time,upload_ip) VALUES (:inode_id,:owner_id,:name,:upload_time,:upload_ip)');
+        $stm = $this->db->prepare('INSERT INTO files (inode_id,owner_id,name,upload_time,upload_ip) VALUES (:inode_id,:owner_id,:name,FROM_UNIXTIME(:upload_time),INET6_ATON(:upload_ip));');
         $stm->execute(array(
             ':inode_id' => $f->inode,
             ':owner_id' => $f->owner_id,
             ':name' => $f->name,
             ':upload_time' => $f->upload_time,
-            ':upload_ip' => inet_pton($f->upload_ip)
+            ':upload_ip' => $f->upload_ip
         ));
         return ((int) $this->db->lastInsertId());
     }
 }
 
+function base64url_encode(string $data): string
+{
+    return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+}
+
+function base64url_decode(string $data): string
+{
+    return base64_decode(strtr($data, '-_', '+/') . str_repeat('=', 3 - (3 + strlen($data)) % 4));
+}
